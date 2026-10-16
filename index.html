@@ -50,6 +50,16 @@
     .notice { font-size: 13px; color: #52665a; line-height: 1.5; }
     footer { text-align: center; padding: 24px; font-size: 13px; }
   </style>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+  const SUPABASE_URL = 'https://phjjzrhnygowxhnpcacp.supabase.co';
+  const SUPABASE_KEY = 'sb_publishable_UG_UlMdRuaN2mW7vChYWyw_eKuQEgIv';
+
+  const supabaseClient = window.supabase.createClient(
+    SUPABASE_URL,
+    SUPABASE_KEY
+  );
+</script>
 </head>
 <body>
   <header>
