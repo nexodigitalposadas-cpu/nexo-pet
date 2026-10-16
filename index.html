@@ -1,82 +1,112 @@
-```html
+
 <!DOCTYPE html>
 <html lang="es">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#123b2a">
-  <meta name="description" content="NEXO+ PET: identificación y ayuda para reunir mascotas con sus familias.">
+  <meta name="theme-color" content="#111827">
   <title>NEXO+ PET | Identificación de mascotas</title>
+  <meta name="description" content="Identificación de mascotas NEXO+ PET. Si encontraste una mascota, contactá a su responsable.">
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
   <style>
+    :root {
+      --green: #16a34a;
+      --dark: #111827;
+      --muted: #64748b;
+      --border: #e2e8f0;
+      --bg: #f1f5f9;
+    }
+
     * { box-sizing: border-box; }
 
     body {
       margin: 0;
-      font-family: Arial, sans-serif;
-      background: #f3f7f4;
-      color: #20352a;
-      line-height: 1.5;
+      font-family: Arial, Helvetica, sans-serif;
+      background: var(--bg);
+      color: var(--dark);
+      min-height: 100vh;
     }
 
     header {
-      background: #123b2a;
+      background: var(--dark);
       color: white;
       text-align: center;
-      padding: 30px 16px;
+      padding: 25px 16px;
     }
 
-    header h1 {
-      margin: 0;
-      font-size: 32px;
+    .brand {
+      font-size: 30px;
+      font-weight: 800;
+      letter-spacing: 1px;
     }
 
-    header p { margin: 6px 0 0; }
+    .brand span { color: #4ade80; }
+
+    header p {
+      margin: 8px 0 0;
+      color: #cbd5e1;
+      font-size: 14px;
+    }
 
     main {
-      max-width: 650px;
-      margin: 24px auto;
-      padding: 0 16px;
+      width: min(100% - 28px, 520px);
+      margin: 28px auto;
     }
 
-    section {
+    .panel {
       background: white;
-      padding: 22px;
-      border-radius: 16px;
-      margin-bottom: 18px;
-      box-shadow: 0 3px 12px #183a2910;
+      padding: 24px;
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      box-shadow: 0 8px 25px rgba(15, 23, 42, .06);
     }
 
-    h2 {
-      margin-top: 0;
-      font-size: 21px;
+    h1 {
+      font-size: 23px;
+      margin: 0 0 10px;
+      text-align: center;
+    }
+
+    .intro {
+      color: var(--muted);
+      text-align: center;
+      line-height: 1.5;
+      font-size: 15px;
     }
 
     label {
       display: block;
-      margin: 14px 0 6px;
-      font-weight: bold;
-    }
-
-    input, button {
-      width: 100%;
-      padding: 13px;
-      border-radius: 9px;
-      font-size: 16px;
+      font-weight: 700;
+      margin: 22px 0 8px;
     }
 
     input {
-      border: 1px solid #ccd8ce;
-      text-transform: uppercase;
+      width: 100%;
+      padding: 14px;
+      border: 1px solid #cbd5e1;
+      border-radius: 10px;
+      font-size: 16px;
     }
 
-    button {
-      border: none;
-      background: #176b45;
-      color: white;
-      font-weight: bold;
-      cursor: pointer;
+    button, .whatsapp {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 9px;
+      width: 100%;
+      padding: 15px;
       margin-top: 14px;
+      border: 0;
+      border-radius: 10px;
+      background: var(--green);
+      color: white;
+      font-weight: 700;
+      font-size: 16px;
+      text-align: center;
+      text-decoration: none;
+      cursor: pointer;
     }
 
     button:disabled {
@@ -84,171 +114,322 @@
       cursor: wait;
     }
 
-    .secondary {
-      background: #e4eee7;
-      color: #123b2a;
-    }
-
-    .notice {
-      font-size: 13px;
-      color: #52665a;
-    }
-
-    #resultado {
+    .message {
+      margin-top: 16px;
+      padding: 13px;
+      border-radius: 10px;
+      line-height: 1.5;
+      font-size: 14px;
       overflow-wrap: anywhere;
-      white-space: pre-line;
     }
 
-    .oculto { display: none; }
+    .hidden { display: none !important; }
+
+    .pet-photo {
+      display: block;
+      width: 100%;
+      max-height: 340px;
+      object-fit: cover;
+      border-radius: 14px;
+      margin: 18px 0;
+      background: #e2e8f0;
+    }
+
+    .pet-info {
+      margin-top: 22px;
+      border-top: 1px solid var(--border);
+    }
+
+    .info-row {
+      padding: 13px 0;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .info-label {
+      display: block;
+      color: var(--muted);
+      font-size: 13px;
+      margin-bottom: 5px;
+    }
+
+    .info-value {
+      font-size: 17px;
+      font-weight: 700;
+      overflow-wrap: anywhere;
+    }
+
+    .status {
+      padding: 12px;
+      background: #fef3c7;
+      color: #92400e;
+      border-radius: 10px;
+      text-align: center;
+      line-height: 1.5;
+    }
+
+    .secondary {
+      background: #e2e8f0;
+      color: var(--dark);
+    }
 
     footer {
+      padding: 10px 16px 28px;
       text-align: center;
-      padding: 24px;
       font-size: 13px;
-      color: #52665a;
+      color: var(--muted);
+    }
+
+    footer strong { color: var(--dark); }
+
+    .loading {
+      text-align: center;
+      padding: 28px 8px;
+      color: var(--muted);
     }
   </style>
 </head>
 
 <body>
   <header>
-    <h1>NEXO+ PET 🐾</h1>
-    <p>Soluciones que conectan</p>
-    <p>Ayudamos a reunir mascotas con sus familias.</p>
+    <div class="brand">NEXO<span>+</span> PET</div>
+    <p>Identificación y protección de mascotas</p>
   </header>
 
   <main>
-    <section>
-      <h2>🐶 ¿Cómo funciona?</h2>
-      <p>
-        Cada mascota puede llevar una identificación NEXO+ PET
-        con un código o QR único.
+    <section id="homePanel" class="panel">
+      <h1>Identificá una mascota</h1>
+      <p class="intro">
+        Si encontraste una mascota con identificación NEXO+ PET,
+        ingresá el código para comprobar si existe.
       </p>
-      <p>
-        Si encontrás una mascota, ingresá su código para comprobar
-        si pertenece al sistema.
-      </p>
-    </section>
 
-    <section>
-      <h2>🔎 Identificar una mascota</h2>
-
-      <form id="buscarForm">
+      <form id="searchForm">
         <label for="codigo">Código de identificación</label>
         <input
           id="codigo"
           name="codigo"
-          placeholder="Ej.: NX-001"
+          type="text"
+          placeholder="Ejemplo: NX-001"
           autocomplete="off"
           maxlength="50"
           required
         >
-        <button id="buscarBtn" type="submit">Buscar mascota</button>
+        <button id="searchButton" type="submit">Buscar identificación</button>
       </form>
 
-      <p id="resultado" role="status" aria-live="polite"></p>
-      <p class="notice">
-        La información personal solo se mostrará cuando esté habilitada
-        de forma segura.
-      </p>
+      <div id="searchMessage" class="message hidden" role="status"></div>
     </section>
 
-    <section>
-      <h2>👤 Área de responsables</h2>
-      <p>
-        Próximamente podrás registrar tus datos y los de tus mascotas,
-        administrar su información y asociar sus identificaciones.
-      </p>
-      <button class="secondary" id="registroBtn" type="button">
-        Próximamente
-      </button>
-    </section>
-
-    <section>
-      <h2>🔐 Administración</h2>
-      <p>
-        Área exclusiva para administrar identificaciones, responsables
-        y mascotas registradas.
-      </p>
-      <p class="notice">
-        El acceso administrativo se habilitará mediante autenticación.
-        No se permite administrar datos desde este acceso público.
-      </p>
+    <section id="petPanel" class="panel hidden" aria-live="polite">
+      <div id="petContent" class="loading">Consultando identificación...</div>
     </section>
   </main>
 
-  <footer>NEXO+ PET · Soluciones que conectan</footer>
-
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <footer>
+    <strong>NEXO+ PET</strong><br>
+    Soluciones que conectan
+  </footer>
 
   <script>
-    const SUPABASE_URL =
-      'https://phjjzrhnygowxhnpcacp.supabase.co';
-
-    const SUPABASE_KEY =
-      'sb_publishable_UG_UlMdRuaN2mW7vChYWyw_eKuQEgIv';
+    // Configuración de Supabase
+    const SUPABASE_URL = 'https://phjjzrhnygowxhnpcacp.supabase.co';
+    const SUPABASE_KEY = 'sb_publishable_UG_UlMdRuaN2mW7vChYWyw_eKuQEgIv';
 
     const supabaseClient = window.supabase.createClient(
       SUPABASE_URL,
       SUPABASE_KEY
     );
 
-    const form = document.getElementById('buscarForm');
-    const codigoInput = document.getElementById('codigo');
-    const resultado = document.getElementById('resultado');
-    const buscarBtn = document.getElementById('buscarBtn');
+    const homePanel = document.getElementById('homePanel');
+    const petPanel = document.getElementById('petPanel');
+    const petContent = document.getElementById('petContent');
+    const searchForm = document.getElementById('searchForm');
+    const searchButton = document.getElementById('searchButton');
+    const searchMessage = document.getElementById('searchMessage');
 
-    form.addEventListener('submit', async function (event) {
-      event.preventDefault();
+    function showMessage(element, message, type = 'info') {
+      element.textContent = message;
+      element.classList.remove('hidden');
+      element.style.background =
+        type === 'error' ? '#fee2e2' :
+        type === 'success' ? '#dcfce7' : '#e0f2fe';
+      element.style.color =
+        type === 'error' ? '#991b1b' :
+        type === 'success' ? '#166534' : '#075985';
+    }
 
-      const codigo = codigoInput.value.trim().toUpperCase();
+    function escapeHTML(value) {
+      return String(value ?? '').replace(/[&<>"']/g, char => ({
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#39;'
+      })[char]);
+    }
 
-      if (!codigo) {
-        resultado.textContent = 'Ingresá un código válido.';
+    function validPhotoURL(value) {
+      if (!value) return '';
+      try {
+        const url = new URL(value);
+        return url.protocol === 'https:' ? url.href : '';
+      } catch {
+        return '';
+      }
+    }
+
+    function validWhatsAppURL(value) {
+      if (!value) return '';
+      try {
+        const url = new URL(value);
+        if (
+          url.protocol === 'https:' &&
+          url.hostname === 'wa.me' &&
+          /^\/[0-9]+$/.test(url.pathname)
+        ) {
+          return url.href;
+        }
+      } catch {}
+      return '';
+    }
+
+    async function loadPet(token) {
+      homePanel.classList.add('hidden');
+      petPanel.classList.remove('hidden');
+      petContent.className = 'loading';
+      petContent.textContent = 'Buscando la información de la mascota...';
+
+      if (
+        typeof token !== 'string' ||
+        !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(token)
+      ) {
+        petContent.className = 'status';
+        petContent.textContent = 'El enlace de identificación no es válido. Revisá el QR.';
         return;
       }
 
-      buscarBtn.disabled = true;
-      resultado.textContent = 'Consultando identificación...';
+      try {
+        const { data, error } = await supabaseClient.rpc(
+          'consultar_mascota_por_token',
+          { token_ingresado: token }
+        );
+
+        if (error) throw error;
+
+        if (!data || !data.nombre) {
+          petContent.className = '';
+          petContent.innerHTML = `
+            <h1>Identificación NEXO+ PET</h1>
+            <p class="status">
+              Esta identificación todavía no tiene una mascota registrada
+              o no se encuentra disponible.
+            </p>
+            <p class="intro">Si necesitás ayuda, contactá a NEXO+ PET.</p>
+          `;
+          return;
+        }
+
+        const photo = validPhotoURL(data.foto_url);
+        const whatsapp = validWhatsAppURL(data.whatsapp_url);
+
+        petContent.className = '';
+        petContent.innerHTML = `
+          <h1>¡Ayudanos a volver a casa!</h1>
+          <p class="intro">Encontraste una mascota identificada con NEXO+ PET.</p>
+
+          ${photo
+            ? `<img class="pet-photo" src="${escapeHTML(photo)}" alt="Foto de ${escapeHTML(data.nombre)}">`
+            : ''
+          }
+
+          <div class="pet-info">
+            <div class="info-row">
+              <span class="info-label">Nombre de la mascota</span>
+              <div class="info-value">${escapeHTML(data.nombre)}</div>
+            </div>
+
+            ${data.raza ? `
+              <div class="info-row">
+                <span class="info-label">Raza</span>
+                <div class="info-value">${escapeHTML(data.raza)}</div>
+              </div>
+            ` : ''}
+
+            ${data.responsable ? `
+              <div class="info-row">
+                <span class="info-label">Responsable</span>
+                <div class="info-value">${escapeHTML(data.responsable)}</div>
+              </div>
+            ` : ''}
+          </div>
+
+          ${whatsapp
+            ? `<a class="whatsapp" href="${escapeHTML(whatsapp)}" target="_blank" rel="noopener noreferrer">💬 CONTACTAR POR WHATSAPP</a>`
+            : `<p class="status">Por el momento no hay un WhatsApp de contacto disponible.</p>`
+          }
+
+          <p class="intro">Gracias por ayudar a que esta mascota vuelva a su hogar.</p>
+        `;
+      } catch (error) {
+        console.error('Error consultando mascota:', error);
+        petContent.className = 'status';
+        petContent.textContent =
+          'No pudimos consultar la identificación en este momento. Intentá nuevamente más tarde.';
+      }
+    }
+
+    searchForm.addEventListener('submit', async event => {
+      event.preventDefault();
+
+      const codigo = document.getElementById('codigo').value.trim();
+
+      if (!codigo) return;
+
+      searchButton.disabled = true;
+      searchButton.textContent = 'Consultando...';
+      searchMessage.classList.add('hidden');
 
       try {
-        // Esta función segura debe crearse en Supabase
-        // antes de que la búsqueda pueda funcionar.
         const { data, error } = await supabaseClient.rpc(
           'buscar_identificador',
           { codigo_ingresado: codigo }
         );
 
-        if (error) {
-          console.error('Error de búsqueda:', error);
-          resultado.textContent =
-            'La búsqueda todavía no está habilitada. Intentá nuevamente más tarde.';
-          return;
-        }
+        if (error) throw error;
 
         if (data === true) {
-          resultado.textContent =
-            'Identificación encontrada. La información de contacto se habilitará cuando completemos la configuración.';
+          showMessage(
+            searchMessage,
+            'Identificación encontrada. La información de contacto se habilitará cuando completemos el registro.',
+            'success'
+          );
         } else {
-          resultado.textContent =
-            'No encontramos ese identificador. Revisá el código e intentá nuevamente.';
+          showMessage(
+            searchMessage,
+            'No encontramos ese código. Revisá que esté escrito correctamente.',
+            'error'
+          );
         }
       } catch (error) {
-        console.error('Error de conexión:', error);
-        resultado.textContent =
-          'No pudimos conectar con el servicio. Intentá nuevamente más tarde.';
+        console.error('Error buscando código:', error);
+        showMessage(
+          searchMessage,
+          'No pudimos realizar la búsqueda. Intentá nuevamente más tarde.',
+          'error'
+        );
       } finally {
-        buscarBtn.disabled = false;
+        searchButton.disabled = false;
+        searchButton.textContent = 'Buscar identificación';
       }
     });
 
-    document.getElementById('registroBtn').addEventListener(
-      'click',
-      function () {
-        alert('El registro de responsables estará disponible próximamente.');
-      }
-    );
+    // Si la página se abre desde un QR, consultar directamente el token.
+    const params = new URLSearchParams(window.location.search);
+    const token = params.get('token');
+
+    if (token) {
+      loadPet(token);
+    }
   </script>
 </body>
 </html>
-```
