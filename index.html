@@ -1,116 +1,254 @@
+```html
 <!DOCTYPE html>
 <html lang="es">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#123b2a">
-  <title>NEXO+ PET</title>
+  <meta name="description" content="NEXO+ PET: identificación y ayuda para reunir mascotas con sus familias.">
+  <title>NEXO+ PET | Identificación de mascotas</title>
+
   <style>
     * { box-sizing: border-box; }
+
     body {
       margin: 0;
       font-family: Arial, sans-serif;
       background: #f3f7f4;
       color: #20352a;
+      line-height: 1.5;
     }
+
     header {
       background: #123b2a;
       color: white;
       text-align: center;
-      padding: 28px 16px;
+      padding: 30px 16px;
     }
-    header h1 { margin: 0; font-size: 30px; }
-    header p { margin-bottom: 0; }
-    main { max-width: 650px; margin: 24px auto; padding: 0 16px; }
+
+    header h1 {
+      margin: 0;
+      font-size: 32px;
+    }
+
+    header p { margin: 6px 0 0; }
+
+    main {
+      max-width: 650px;
+      margin: 24px auto;
+      padding: 0 16px;
+    }
+
     section {
       background: white;
-      padding: 20px;
+      padding: 22px;
       border-radius: 16px;
       margin-bottom: 18px;
       box-shadow: 0 3px 12px #183a2910;
     }
-    h2 { margin-top: 0; }
-    label { display: block; margin: 14px 0 6px; font-weight: bold; }
-    input, textarea, button {
+
+    h2 {
+      margin-top: 0;
+      font-size: 21px;
+    }
+
+    label {
+      display: block;
+      margin: 14px 0 6px;
+      font-weight: bold;
+    }
+
+    input, button {
       width: 100%;
-      padding: 12px;
+      padding: 13px;
       border-radius: 9px;
       font-size: 16px;
     }
-    input, textarea { border: 1px solid #ccd8ce; }
+
+    input {
+      border: 1px solid #ccd8ce;
+      text-transform: uppercase;
+    }
+
     button {
       border: none;
       background: #176b45;
       color: white;
       font-weight: bold;
       cursor: pointer;
-      margin-top: 16px;
+      margin-top: 14px;
     }
-    .secondary { background: #e4eee7; color: #123b2a; }
-    .notice { font-size: 13px; color: #52665a; line-height: 1.5; }
-    footer { text-align: center; padding: 24px; font-size: 13px; }
-  </style>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script>
-  const SUPABASE_URL = 'https://phjjzrhnygowxhnpcacp.supabase.co';
-  const SUPABASE_KEY = 'sb_publishable_UG_UlMdRuaN2mW7vChYWyw_eKuQEgIv';
 
-  const supabaseClient = window.supabase.createClient(
-    SUPABASE_URL,
-    SUPABASE_KEY
-  );
-</script>
+    button:disabled {
+      opacity: .6;
+      cursor: wait;
+    }
+
+    .secondary {
+      background: #e4eee7;
+      color: #123b2a;
+    }
+
+    .notice {
+      font-size: 13px;
+      color: #52665a;
+    }
+
+    #resultado {
+      overflow-wrap: anywhere;
+      white-space: pre-line;
+    }
+
+    .oculto { display: none; }
+
+    footer {
+      text-align: center;
+      padding: 24px;
+      font-size: 13px;
+      color: #52665a;
+    }
+  </style>
 </head>
+
 <body>
   <header>
     <h1>NEXO+ PET 🐾</h1>
     <p>Soluciones que conectan</p>
-    <p>La información de tu mascota, siempre a mano.</p>
+    <p>Ayudamos a reunir mascotas con sus familias.</p>
   </header>
 
   <main>
     <section>
       <h2>🐶 ¿Cómo funciona?</h2>
-      <p>Con el identificador NEXO+ PET, quien encuentre a tu mascota podrá ayudarte a reunirla con su familia.</p>
-      <p>Escaneá el QR de su identificación para acceder a la información habilitada por su responsable.</p>
+      <p>
+        Cada mascota puede llevar una identificación NEXO+ PET
+        con un código o QR único.
+      </p>
+      <p>
+        Si encontrás una mascota, ingresá su código para comprobar
+        si pertenece al sistema.
+      </p>
     </section>
 
     <section>
       <h2>🔎 Identificar una mascota</h2>
+
       <form id="buscarForm">
         <label for="codigo">Código de identificación</label>
-        <input id="codigo" placeholder="Ej.: NX-001" required>
-        <button type="submit">Buscar mascota</button>
+        <input
+          id="codigo"
+          name="codigo"
+          placeholder="Ej.: NX-001"
+          autocomplete="off"
+          maxlength="50"
+          required
+        >
+        <button id="buscarBtn" type="submit">Buscar mascota</button>
       </form>
-      <p id="resultado" role="status"></p>
-      <p class="notice">La consulta estará disponible cuando conectemos la base de datos.</p>
+
+      <p id="resultado" role="status" aria-live="polite"></p>
+      <p class="notice">
+        La información personal solo se mostrará cuando esté habilitada
+        de forma segura.
+      </p>
     </section>
 
     <section>
       <h2>👤 Área de responsables</h2>
-      <p>Próximamente vas a poder registrar tus datos y los de tus mascotas.</p>
-      <button class="secondary" type="button" id="registroBtn">Próximamente</button>
+      <p>
+        Próximamente podrás registrar tus datos y los de tus mascotas,
+        administrar su información y asociar sus identificaciones.
+      </p>
+      <button class="secondary" id="registroBtn" type="button">
+        Próximamente
+      </button>
     </section>
 
     <section>
       <h2>🔐 Administración</h2>
-      <p>Acceso reservado al equipo autorizado de NEXO+ PET.</p>
-      <p class="notice">El panel administrativo se habilitará al integrar la autenticación segura.</p>
+      <p>
+        Área exclusiva para administrar identificaciones, responsables
+        y mascotas registradas.
+      </p>
+      <p class="notice">
+        El acceso administrativo se habilitará mediante autenticación.
+        No se permite administrar datos desde este acceso público.
+      </p>
     </section>
   </main>
 
   <footer>NEXO+ PET · Soluciones que conectan</footer>
 
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+
   <script>
-    document.getElementById('buscarForm').addEventListener('submit', function(e) {
-      e.preventDefault();
-      document.getElementById('resultado').textContent =
-        'La consulta de mascotas estará disponible cuando se conecte la base de datos.';
+    const SUPABASE_URL =
+      'https://phjjzrhnygowxhnpcacp.supabase.co';
+
+    const SUPABASE_KEY =
+      'sb_publishable_UG_UlMdRuaN2mW7vChYWyw_eKuQEgIv';
+
+    const supabaseClient = window.supabase.createClient(
+      SUPABASE_URL,
+      SUPABASE_KEY
+    );
+
+    const form = document.getElementById('buscarForm');
+    const codigoInput = document.getElementById('codigo');
+    const resultado = document.getElementById('resultado');
+    const buscarBtn = document.getElementById('buscarBtn');
+
+    form.addEventListener('submit', async function (event) {
+      event.preventDefault();
+
+      const codigo = codigoInput.value.trim().toUpperCase();
+
+      if (!codigo) {
+        resultado.textContent = 'Ingresá un código válido.';
+        return;
+      }
+
+      buscarBtn.disabled = true;
+      resultado.textContent = 'Consultando identificación...';
+
+      try {
+        // Esta función segura debe crearse en Supabase
+        // antes de que la búsqueda pueda funcionar.
+        const { data, error } = await supabaseClient.rpc(
+          'buscar_identificador',
+          { codigo_ingresado: codigo }
+        );
+
+        if (error) {
+          console.error('Error de búsqueda:', error);
+          resultado.textContent =
+            'La búsqueda todavía no está habilitada. Intentá nuevamente más tarde.';
+          return;
+        }
+
+        if (data === true) {
+          resultado.textContent =
+            'Identificación encontrada. La información de contacto se habilitará cuando completemos la configuración.';
+        } else {
+          resultado.textContent =
+            'No encontramos ese identificador. Revisá el código e intentá nuevamente.';
+        }
+      } catch (error) {
+        console.error('Error de conexión:', error);
+        resultado.textContent =
+          'No pudimos conectar con el servicio. Intentá nuevamente más tarde.';
+      } finally {
+        buscarBtn.disabled = false;
+      }
     });
 
-    document.getElementById('registroBtn').addEventListener('click', function() {
-      alert('El registro de responsables estará disponible próximamente.');
-    });
+    document.getElementById('registroBtn').addEventListener(
+      'click',
+      function () {
+        alert('El registro de responsables estará disponible próximamente.');
+      }
+    );
   </script>
 </body>
 </html>
+```
