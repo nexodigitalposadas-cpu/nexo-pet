@@ -134,6 +134,16 @@
 
     .pet-data p { margin: 10px 0; }
 
+    .admin-list {
+      padding: 14px;
+      background: #f3f7f4;
+      border: 1px solid #d8e4db;
+      border-radius: 12px;
+      margin: 14px 0;
+    }
+
+    .admin-list h3 { margin-top: 0; }
+
     footer {
       text-align: center;
       padding: 24px;
@@ -247,6 +257,44 @@
       </form>
 
       <p id="resultadoRegistro" class="status" role="status" aria-live="polite"></p>
+
+      <div class="admin-list">
+        <h3>✏️ Editar mascota registrada</h3>
+        <p class="notice">Seleccioná una mascota activa para modificar sus datos. El código y el QR no se modifican.</p>
+        <label for="mascotaParaEditar">Mascotas registradas</label>
+        <select id="mascotaParaEditar">
+          <option value="">Cargando mascotas...</option>
+        </select>
+        <button id="recargarMascotasBtn" class="secondary" type="button">Actualizar listado</button>
+
+        <form id="mascotaEditForm" class="oculto">
+          <h3>Datos del responsable</h3>
+
+          <label for="editarNombreResponsable">Nombre del responsable</label>
+          <input id="editarNombreResponsable" maxlength="150" required>
+
+          <label for="editarWhatsapp">WhatsApp con código de país y área</label>
+          <input id="editarWhatsapp" type="tel" maxlength="25" required>
+
+          <h3>Datos de la mascota</h3>
+
+          <label for="editarNombreMascota">Nombre de la mascota</label>
+          <input id="editarNombreMascota" maxlength="150" required>
+
+          <label for="editarRaza">Raza</label>
+          <input id="editarRaza" maxlength="150" placeholder="Opcional">
+
+          <label for="editarFotoUrl">URL de la foto</label>
+          <input id="editarFotoUrl" type="url" placeholder="https://...">
+
+          <label for="editarObservaciones">Observaciones internas</label>
+          <textarea id="editarObservaciones" maxlength="2000"></textarea>
+
+          <button id="guardarEdicionBtn" type="submit">Guardar cambios</button>
+          <button id="cancelarEdicionBtn" class="secondary" type="button">Cancelar edición</button>
+        </form>
+        <p id="resultadoEdicion" class="status" role="status" aria-live="polite"></p>
+      </div>
     </section>
   </main>
 
@@ -446,6 +494,140 @@
       });
     }
 
+    let mascotasEditables = [];
+
+    function limpiarFormularioEdicion() {
+      $('mascotaEditForm').reset();
+      $('mascotaEditForm').dataset.mascotaId = '';
+      ocultar('mascotaEditForm');
+    }
+
+    async function cargarMascotasParaEditar(seleccionId = '') {
+      const selector = $('mascotaParaEditar');
+      selector.innerHTML = '<option value="">Cargando mascotas...</option>';
+      limpiarFormularioEdicion();
+      $('resultadoEdicion').textContent = '';
+
+      const { data, error } = await db.rpc('listar_mascotas_para_editar');
+
+      if (error) {
+        console.error('Error al cargar mascotas para editar:', error);
+        selector.innerHTML = '<option value="">No se pudieron cargar las mascotas</option>';
+        $('resultadoEdicion').textContent =
+          'No se pudo cargar el listado. Verificá la sesión e intentá nuevamente.';
+        return;
+      }
+
+      mascotasEditables = Array.isArray(data) ? data : [];
+      selector.replaceChildren();
+
+      const opcionInicial = document.createElement('option');
+      opcionInicial.value = '';
+      opcionInicial.textContent = mascotasEditables.length
+        ? 'Seleccioná una mascota'
+        : 'No hay mascotas con identificadores activos';
+      selector.appendChild(opcionInicial);
+
+      mascotasEditables.forEach(mascota => {
+        const opcion = document.createElement('option');
+        opcion.value = mascota.mascota_id;
+        opcion.textContent = `${mascota.codigo} — ${mascota.nombre_mascota}`;
+        selector.appendChild(opcion);
+      });
+
+      if (seleccionId && mascotasEditables.some(m => m.mascota_id === seleccionId)) {
+        selector.value = seleccionId;
+        mostrarDatosParaEditar(seleccionId);
+      }
+    }
+
+    function mostrarDatosParaEditar(mascotaId) {
+      const mascota = mascotasEditables.find(m => m.mascota_id === mascotaId);
+
+      if (!mascota) {
+        limpiarFormularioEdicion();
+        return;
+      }
+
+      $('mascotaEditForm').dataset.mascotaId = mascota.mascota_id;
+      $('editarNombreResponsable').value = mascota.nombre_responsable || '';
+      $('editarWhatsapp').value = mascota.whatsapp || '';
+      $('editarNombreMascota').value = mascota.nombre_mascota || '';
+      $('editarRaza').value = mascota.raza || '';
+      $('editarFotoUrl').value = mascota.foto_url || '';
+      $('editarObservaciones').value = mascota.observaciones || '';
+      $('resultadoEdicion').textContent = `Editando ${mascota.codigo}. El identificador y su QR se conservarán.`;
+      mostrar('mascotaEditForm');
+    }
+
+    $('mascotaParaEditar').addEventListener('change', event => {
+      mostrarDatosParaEditar(event.target.value);
+    });
+
+    $('recargarMascotasBtn').addEventListener('click', async () => {
+      await cargarMascotasParaEditar($('mascotaParaEditar').value);
+    });
+
+    $('cancelarEdicionBtn').addEventListener('click', () => {
+      limpiarFormularioEdicion();
+      $('mascotaParaEditar').value = '';
+      $('resultadoEdicion').textContent = 'Edición cancelada.';
+    });
+
+    $('mascotaEditForm').addEventListener('submit', async event => {
+      event.preventDefault();
+
+      const boton = $('guardarEdicionBtn');
+      const mascotaId = $('mascotaEditForm').dataset.mascotaId;
+      if (!mascotaId) {
+        $('resultadoEdicion').textContent = 'Seleccioná una mascota antes de guardar.';
+        return;
+      }
+
+      const foto = $('editarFotoUrl').value.trim();
+      const whatsapp = $('editarWhatsapp').value.trim();
+
+      if (foto && !/^https:\/\//i.test(foto)) {
+        $('resultadoEdicion').textContent = 'La dirección de la foto debe comenzar con https://';
+        return;
+      }
+
+      if (!/^[+0-9()\s.-]{8,25}$/.test(whatsapp)) {
+        $('resultadoEdicion').textContent =
+          'Revisá el número de WhatsApp e incluí el código de país y área.';
+        return;
+      }
+
+      boton.disabled = true;
+      $('resultadoEdicion').textContent = 'Guardando cambios...';
+
+      try {
+        const { data, error } = await db.rpc('editar_mascota', {
+          p_mascota_id: mascotaId,
+          p_nombre_responsable: $('editarNombreResponsable').value.trim(),
+          p_whatsapp: whatsapp,
+          p_nombre_mascota: $('editarNombreMascota').value.trim(),
+          p_raza: $('editarRaza').value.trim() || null,
+          p_foto_url: foto || null,
+          p_observaciones: $('editarObservaciones').value.trim() || null
+        });
+
+        if (error) throw error;
+        if (!data || data.exito !== true) {
+          throw new Error(data?.mensaje || 'No se pudieron guardar los cambios.');
+        }
+
+        $('resultadoEdicion').textContent = 'Cambios guardados correctamente.';
+        await cargarMascotasParaEditar(mascotaId);
+      } catch (error) {
+        console.error('Error al editar mascota:', error);
+        $('resultadoEdicion').textContent =
+          error.message || 'Ocurrió un error al guardar los cambios.';
+      } finally {
+        boton.disabled = false;
+      }
+    });
+
     async function verificarSesion() {
       const { data: sessionData } = await db.auth.getSession();
       const session = sessionData?.session;
@@ -468,6 +650,7 @@
       ocultar('busquedaSection');
       mostrar('adminSection');
       await cargarIdentificadores();
+      await cargarMascotasParaEditar();
       return true;
     }
 
@@ -558,6 +741,7 @@
 
         $('mascotaForm').reset();
         await cargarIdentificadores();
+        await cargarMascotasParaEditar();
       } catch (error) {
         console.error('Error de registro:', error);
         $('resultadoRegistro').textContent =
